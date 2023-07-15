@@ -9,7 +9,7 @@ pipeline {
     }
     stage ("Dependency check") {
       steps {
-        dependencyCheck additionalArguments: '--format HTML,JSON', odcInstallation: 'intellibot-dp-check'
+        dependencyCheck additionalArguments: '--format HTML JSON', odcInstallation: 'intellibot-dp-check'
       }
     }
   }
