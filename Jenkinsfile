@@ -7,5 +7,10 @@ pipeline {
         echo "Iniciando a Pipe"
       }
     }
+    stage ("Dependency check") {
+      steps {
+        dependencyCheck additionalArguments: '--format HTML,JSON', odcInstallation: 'intellibot-dp-check'
+      }
+    }
   }
 }
