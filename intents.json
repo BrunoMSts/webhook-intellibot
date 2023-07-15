@@ -1,0 +1,9 @@
+{
+  "security_intents": 
+    {
+      "types": { 
+        "analysis": "Análise de Pipeline",
+        "information": "Informações sobre segurança"
+      }
+    }
+}
