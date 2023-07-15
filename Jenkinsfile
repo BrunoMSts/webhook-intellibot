@@ -10,9 +10,9 @@ pipeline {
     stage ("Dependency check") {
       steps {
         echo "Gerando relatório em HTML"
-        dependencyCheck additionalArguments: '--scan . --format HTML', odcInstallation: 'intellibot-dp-check'
+        dependencyCheck '--scan . --format HTML'
         echo "Gerando relatório em JSON"
-        dependencyCheck additionalArguments: '--scan . --format JSON', odcInstallation: 'intellibot-dp-check'
+        dependencyCheck '--scan . --format JSON'
       }
     }
   }
