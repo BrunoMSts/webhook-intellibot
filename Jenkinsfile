@@ -19,12 +19,5 @@ pipeline {
         echo "Tarefa concluida"
       }
     }
-    stage ("Dependency check") {
-      steps {
-        echo "Escaneando"
-        echo "Gerando relatórios"
-        dependencyCheck additionalArguments: '--scan . --format HTML --format JSON', odcInstallation: 'intellibot-dp-check'
-      }
-    }
   }
 }
