@@ -7,12 +7,20 @@ pipeline {
         echo "Iniciando a Pipe"
       }
     }
-    stage("Outlier Teste") {
+    stage("Scan") {
       steps {
-        echo "Iniciando tarefa longa"
-        sleep time: 1800, unit: 'SECONDS'
-        echo "Tarefa concluida"
+        def scannerHome = tool name: 'SonarQubeScanner', type: 'hudson.plugins.sonar.SonarRunnerInstalation'
+        withSonarQubeEnv(installationName: 'sonarqube') {
+          sh "${scannerHome}/bin/sonar-scanner"
+        }
       }
     }
+    // stage("Outlier Teste") {
+    //   steps {
+    //     echo "Iniciando tarefa longa"
+    //     sleep time: 1800, unit: 'SECONDS'
+    //     echo "Tarefa concluida"
+    //   }
+    // }
   }
 }
