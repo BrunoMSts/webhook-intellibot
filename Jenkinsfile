@@ -16,7 +16,7 @@ pipeline {
 
     stage("Scan") {
       steps {
-          withSonarQubeEnv('sonarqube-scanner') {
+          withSonarQubeEnv('sonarqube') {
           sh "sonar-scanner"
         }        
       }
