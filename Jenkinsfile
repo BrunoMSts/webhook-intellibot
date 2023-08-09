@@ -13,14 +13,12 @@ pipeline {
         sh 'npm install'
       }
     }
-
-    stage("Scan") {
-      steps {
-          withSonarQubeEnv('sonarqube') {
-          sh "sonar-scanner"
-        }        
-      }
+    stage('SonarQube Analysis') {
+      def scannerHome = tool 'sonarqube-scanner';
+      withSonarQubeEnv() {
+        sh "${scannerHome}/bin/sonar-scanner"
     }
+  }
     // stage("Outlier Teste") {
     //   steps {
     //     echo "Iniciando tarefa longa"
