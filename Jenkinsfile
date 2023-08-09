@@ -7,11 +7,18 @@ pipeline {
         echo "Iniciando a Pipe"
       }
     }
+    stage ("Compile") {
+      steps {
+        sh "mvn clean install"
+      }
+    }
     stage("Scan") {
       steps {
-        withSonarQubeEnv('sonarqube') {
-          sh "./mvnw clean sonar:sonar"
-        }        
+        script {
+          withSonarQubeEnv('sonarqube') {
+            sh "mvn sonar:sonar"
+          }        
+        }
       }
     }
     // stage("Outlier Teste") {
