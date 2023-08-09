@@ -7,14 +7,18 @@ pipeline {
         echo "Iniciando a Pipe"
       }
     }
+
+    stage("Install Dependencies") {
+      steps {
+        sh 'npm install'
+      }
+    }
+
     stage("Scan") {
       steps {
-        script {
-          def scannerHome = tool name: 'SonarQubeScanner', type: 'hudson.plugins.sonar.SonarRunnerInstallation'
           withSonarQubeEnv('sonarqube-scanner') {
-            sh "${scannerHome}/bin/sonar-scanner"
-          }        
-        }
+          sh "sonar-scanner"
+        }        
       }
     }
     // stage("Outlier Teste") {
