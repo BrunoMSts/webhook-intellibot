@@ -1,14 +1,11 @@
 pipeline {
   agent any
 
-  tools {
-    maven "Maven 3.9.3"
-  }
-
   stages  {
     stage ("Inicial") {
       steps {
         echo "Iniciando a Pipe"
+        sh "mvn clean install"
       }
     }
     stage("Scan") {
