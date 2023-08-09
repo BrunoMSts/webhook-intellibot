@@ -9,8 +9,9 @@ pipeline {
     }
     stage("Scan") {
       steps {
+        def mvnHome = tool name: "Maven-3.8.4", type: "maven"
         withSonarQubeEnv(installationName: 'sonarqube') {
-          bat "./mvnw clean org.sonarsource.scanner.maven:sonar-maven-plugin:3.9.0.2155:sonar"
+          sh "${mvnHome}/bin/mvn sonar:sonar"
         }        
       }
     }
