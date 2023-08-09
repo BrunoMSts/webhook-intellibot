@@ -9,10 +9,12 @@ pipeline {
     }
     stage("Scan") {
       steps {
-        def mvnHome = tool name: "Maven-3.8.4", type: "maven"
-        withSonarQubeEnv(installationName: 'sonarqube') {
-          sh "${mvnHome}/bin/mvn sonar:sonar"
-        }        
+        script {
+          def mvnHome = tool name: "Maven-3.8.6", type: "maven"
+          withSonarQubeEnv(installationName: 'sonarqube') {
+            sh "${mvnHome}/bin/mvn sonar:sonar"
+          }        
+        }
       }
     }
     // stage("Outlier Teste") {
