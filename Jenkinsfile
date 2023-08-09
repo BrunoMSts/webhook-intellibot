@@ -7,16 +7,12 @@ pipeline {
         echo "Iniciando a Pipe"
       }
     }
-    stage ("Compile") {
-      steps {
-        sh "mvn clean install"
-      }
-    }
     stage("Scan") {
       steps {
         script {
+          def scannerHome = tool name: 'SonnarQubeScanner', type: 'hudson.plugins.sonar.SonarRunnerInstallation'
           withSonarQubeEnv('sonarqube') {
-            sh "mvn sonar:sonar"
+            sh "${scannerHome}/bin/sonar-scanner"
           }        
         }
       }
