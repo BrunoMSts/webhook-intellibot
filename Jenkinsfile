@@ -5,7 +5,6 @@ pipeline {
     stage ("Inicial") {
       steps {
         echo "Iniciando a Pipe"
-        sh "mvn clean install"
       }
     }
     stage("Scan") {
