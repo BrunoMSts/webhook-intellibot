@@ -1,6 +1,10 @@
 pipeline {
   agent any
 
+  tools {
+    mvn "Maven 3.9.3"
+  }
+
   stages  {
     stage ("Inicial") {
       steps {
