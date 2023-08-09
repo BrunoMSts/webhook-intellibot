@@ -9,12 +9,9 @@ pipeline {
     }
     stage("Scan") {
       steps {
-        script {
-          def scannerHome = tool name: 'SonarQubeScanner', type: 'hudson.plugins.sonar.SonarRunnerInstalation'
-          withSonarQubeEnv(installationName: 'sonarqube') {
-            sh "${scannerHome}/bin/sonar-scanner"
-          }
-        }
+        withSonarQubeEnv(installationName: 'sonarqube') {
+          sh "./mvnw clean org.sonarsource.scanner.maven:sonar-maven-plugin:3.9.0.2155:sonar"
+        }        
       }
     }
     // stage("Outlier Teste") {
