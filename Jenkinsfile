@@ -24,10 +24,7 @@ pipeline {
       }
       steps {
         withSonarQubeEnv('sonarqube') {
-          sh '''${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=tcc-project \
-          -Dsonar.projectName=tcc-project \
-          -Dsonar.projectVersion=1.0 \
-          '''
+          sh "${scannerHome}/bin/sonar-scanner -X"
       }
     }
   }
