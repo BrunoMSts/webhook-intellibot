@@ -28,7 +28,7 @@ pipeline {
           -Dsonar.projectKey=tcc-project \
           -Dsonar.sources=./src \
           -Dsonar.host.url=http://localhost:9000 \
-          -Dsonar.login=squ_448831b52e7a37f2538480b9e792d9dd16804842"
+          -Dsonar.login=squ_9a3231bfdffc431817f4b153be09e9d3bda36859"
           '''
       }
     }
