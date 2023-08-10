@@ -1,6 +1,11 @@
 pipeline {
   agent any
 
+  tools {
+    maven "maven3"
+    jdk "jdk11"
+  }
+
   stages  {
     stage ("Inicial") {
       steps {
@@ -14,12 +19,15 @@ pipeline {
       }
     }
     stage('SonarQube Analysis') {
+      environment{
+        scannerHome = tool "sonarqube-scanner"
+      }
       steps {
-        script {
-          def scannerHome = tool 'sonarqube-scanner';
-          withSonarQubeEnv('sonarqube') {
-            sh "${scannerHome}/bin/sonar-scanner"
-        }
+        withSonarQubeEnv('sonarqube') {
+          sh '''${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=tcc-project \
+          -Dsonar.projectName=tcc-project \
+          -Dsonar.projectVersion=1.0 \
+          '''
       }
     }
   }
