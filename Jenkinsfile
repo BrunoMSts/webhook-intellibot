@@ -24,7 +24,12 @@ pipeline {
       }
       steps {
         withSonarQubeEnv('sonarqube') {
-          sh "${scannerHome}/bin/sonar-scanner -X"
+          sh '''${scannerHome}/bin/sonar-scanner
+          -Dsonar.projectKey=tcc-project \
+          -Dsonar.sources=./src \
+          -Dsonar.host.url=http://localhost:9000 \
+          -Dsonar.login=squ_448831b52e7a37f2538480b9e792d9dd16804842"
+          '''
       }
     }
   }
@@ -33,7 +38,7 @@ pipeline {
     //     echo "Iniciando tarefa longa"
     //     sleep time: 1800, unit: 'SECONDS'
     //     echo "Tarefa concluida"
-    //   }
+    //   }squ_448831b52e7a37f2538480b9e792d9dd16804842
     // }
   }
 }
