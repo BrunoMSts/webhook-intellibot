@@ -47,12 +47,12 @@ pipeline {
   //     }
   //   }
   // }
-    // stage("Outlier Teste") {
-    //   steps {
-    //     echo "Iniciando tarefa longa"
-    //     sleep time: 1800, unit: 'SECONDS'
-    //     echo "Tarefa concluida"
-    //   }squ_448831b52e7a37f2538480b9e792d9dd16804842
-    // }
+    stage("Outlier Teste") {
+      steps {
+        echo "Iniciando tarefa longa"
+        sleep time: 1800, unit: 'SECONDS'
+        echo "Tarefa concluida"
+      }squ_448831b52e7a37f2538480b9e792d9dd16804842
+    }
   }
 }
