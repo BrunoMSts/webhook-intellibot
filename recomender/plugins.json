@@ -1,0 +1,15 @@
+{
+  "plugins_to_recomend": [
+    "OWASP Dependency-Check Plugin",
+    "OWASP ZAP",
+    "Snyk Security Plugin",
+    "Static Analysis Utilities (Checkstyle, PMD, FindBugs)",
+    "SonarQube Scanner",
+    "GitLab Plugin",
+    "Credentials Plugin",
+    "Publish Over SSH Plugin",
+    "Kubernetes Continuous Deploy Plugin"
+  ]
+}
+
+

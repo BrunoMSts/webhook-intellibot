@@ -2,118 +2,291 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const axios = require('axios')
 const fs = require('fs')
-
-const intents = require('./intents.json')
-const { setInterval } = require('timers/promises')
+const { Configuration, OpenAIApi } = require("openai")
+const { anomalyDetectionService } = require('./src/app/services/anomaly_detection_service')
+const { riskAnalysisService, staticCodeCheck } = require('./src/app/services/risk_analysis_service')
+const path = require('path');
 
 const app = express()
+app.use(bodyParser.json())
 const PORT = 3000
 
 function redirectLogToArchive(texto) {
   fs.writeFileSync('./logs/log.txt', texto + '\n', { flag: 'a' })  
 }
 
-const jenkinsURL = 'http://143.198.110.110:8080'
-const jobName = 'intellibot'
-const config = {
+let jenkinsURL = '' 
+let slackURL = ''
+let sonarQubeURL = ''
+let defautlIntent = false
+let isUsingSlack = false
+let isUsingSonar = false
+let jobName = '' 
+let sonarProjectName = ''
+let config = {
   auth: {
-    username: "brunobot",
-    password: "brunobot"
+    username: "",
+    apiToken: ""
+  },
+  sonarAuth: {
+    token: ""
   }
 }
 
-async function getPipeInfos() {
-  try {
-    const response = await axios.get(`${jenkinsURL}/job/${jobName}/lastBuild/api/json`, config)
-    // redirectLogToArchive(JSON.stringify(buildData))
-    return response.data
-
-  } catch (error) {
-    console.error("Error ao obter response" + error)
-
-  }
-}
-
-async function getPipeSecurityInfos() {
-  try {
-    const response = await axios.get(`${jenkinsURL}/api/json?tree=useSecurity`, config)
-    return response.data
-  } catch (error) {
-    console.error("Error ao obter response" + error)
-  }
-}
-
-async function getLastBuild() {
-  try {
-    const lastBuild = await axios.get(`${jenkinsURL}/job/${jobName}/lastBuild/buildNumber`, config)
-    return lastBuild.data
-  } catch (error) {
-    console.error("Error ao obter response" + error)
-  }
-}
-
-async function getBuildInfos() {
-  try {
-    const lastBuild = await getLastBuild()
-    const response = await axios.get(`${jenkinsURL}/job/${jobName}/${lastBuild}/consoleText`, config)
-    return response.data
-  } catch (error) {
-    console.error("Error ao obter response" + error)
-  }
-}
-
-function formatBuildInfos(buildInfos) {
-  let buildFormated = buildInfos.split("stage").filter(elem => !elem.includes("> git"))
-  console.log(buildFormated)
-  // buildInfos.split("stage").forEach(splitted => {
-  //   console.log(splitted + "END")
-  // })
-  
-}
+let sonarData = ''
 
 app.use(bodyParser.json())
 
 app.get("/", async (req, res) => {
-  res.json({status: "OK"})
+  const pagesPath = path.join(__dirname, 'src', 'app', 'pages')
+  res.sendFile(path.join(pagesPath, 'index.html'));
 } )
 
-app.post("/", async (req, res) => {
+app.get('/chart', (req, res) => {
+  const pagesPath = path.join(__dirname, 'src', 'app', 'pages', 'chart')
+  res.sendFile(path.join(pagesPath, 'index.html'));
+});
 
-  const intentName = req.body.queryResult.intent.displayName
+app.get('/graphs', async (req, res) => {
+  if(sonarQubeURL) {
+    const {sonarAnalysis} = await staticCodeCheck(sonarQubeURL, config.sonarAuth.token, sonarProjectName)
+    res.json({
+      BUG: sonarAnalysis.BUG,
+      CODE_SMELL: sonarAnalysis.CODE_SMELL,
+      VULNERABILITY: sonarAnalysis.VULNERABILITY
+    })
+  }
+  else {
+    res.json({ msg: "Não há gráfico disponível. Conecte ao sonar ou Verifique as credenciais!" })
+  }
+})
 
-  if(intentName === intents.security_intents.types.analysis) {
+app.post("/webhook", async (req, res) => {
+  const intentName = req.body.intentInfo?.displayName
 
-    const pipeInfos = await getPipeInfos()
-    const buildInfos = await getBuildInfos()
-    formatBuildInfos(buildInfos)
-    const { fullDisplayName, result, timestamp } = pipeInfos
-
-    let botResponse = {"fulfillmentText":`Análise realizada. Aqui estão algumas informações sobre sua pipe.
-                                            Nome: ${fullDisplayName}
-                                            Resultado: ${result}
-                                            Tempo: ${new Date(timestamp)}
-                                            Build: ${buildInfos}` }
-
-    const pipeSecurityInfos = await getPipeSecurityInfos()
-    // botResponse = pipeSecurityInfos.useSecurity ? "Sua pipe esta com a flag useSecurity ativada." : "Sua pipe esta com a flag useSecurity desativada. Considere ativar imediatamente."
-    //COLOCAR VARIAS RESPONSES NO BOT
-    res.json(botResponse)
-    // res.json({ 
-    //   "fulfillmentText": [
-    //     {
-
-    //     }
-    //   ], 
-    // })
+  if(intentName === "Default Welcome Intent" ) {
+    defautlIntent = true
+    res.json({
+      fulfillment_response: {
+        messages: [
+          {
+            text: {
+              text: [`Olá 👋! Sou seu assistente virutal e vou tentar te ajudar com sua pipeline Jenkins 🤖.`]
+            }
+          },
+          {
+            text: {
+              text: ["Para uma melhor experiência, recomendo a utilização do slack; Desse modo você conseguirá receber os relatórios diretamente no canal escolhido. Mas sinta se a vontade para ficar por aqui também!"]
+            }
+          },
+          {
+            text: {
+              text: ["Para começarmos, primeiro me informe a url onde seu jenkins está hospedado"]
+            }
+          }
+        ]
+      }
+    })
   }
 
-  console.log(intentName)  
+  if(req.body.fulfillmentInfo?.tag === "jenkinsUrl") {
+    jenkinsURL = req.body.sessionInfo.parameters.jenkinsurl
+    res.json({})
+  }
 
-  // res.json({ "fulfillmentText": "Etou aqui, estou esperando" })
+  if(req.body.fulfillmentInfo?.tag === "login") {
+    config.auth.username = req.body.text
+    res.json({})
+  }
+
+  if(req.body.fulfillmentInfo?.tag === "apiToken") {
+    config.auth.apiToken = req.body.text
+    res.json({})
+  }
+
+  if(req.body.fulfillmentInfo?.tag === "jobName") {
+    jobName = req.body.text
+    res.json({})
+  }
+
+  if(req.body.fulfillmentInfo?.tag === "sonarURL") {
+    sonarQubeURL = req.body.text
+    res.json({})
+  }
+
+  if(req.body.fulfillmentInfo?.tag === "sonarToken") {
+    config.sonarAuth.token = req.body.text
+    res.json({})
+  }
+
+  if(req.body.fulfillmentInfo?.tag === "sonarProject") {
+    sonarProjectName = req.body.text
+    isUsingSonar = true
+    res.json({})
+  }
+
+  if(req.body.fulfillmentInfo?.tag === "slackUrl") {
+    slackURL = req.body.text
+    isUsingSlack = true
+    res.json({})
+  }
+
+  if(req.body.fulfillmentInfo?.tag === "anomalyAnalysis") {
+    const configJenkins = {
+      headers: {
+        Authorization: `Basic ${Buffer.from(`${config.auth.username}:${config.auth.apiToken}`).toString('base64')}`
+      }
+    }
+
+    if(isUsingSlack) {
+      res.json({
+        fulfillment_response: {
+          messages: [
+            {
+              text: {
+                text: ["Análise iniciada, assim que terminamos enviaremos os resultados para o seu canal do slack."]
+              }
+            }
+          ]
+        }
+      })
+      await axios.post(slackURL, { text: `*------ ☣️ Iniciada a detecção de anomalias ☣️ ------*` })
+      const response = await anomalyDetectionService(jenkinsURL, jobName, configJenkins)
+      response.forEach(async (res) => {
+        const msg = res.text.text
+        await axios.post(slackURL, { text: `${msg}` })
+      })
+    } else {
+      const response = await anomalyDetectionService(jenkinsURL, jobName, configJenkins)
+      res.json({
+        fulfillment_response: {
+          messages: response
+        }
+      })
+    }
+  }
+
+  if(req.body.fulfillmentInfo?.tag === "riskAnalysis") {
+
+    const configJenkins = {
+      headers: {
+        Authorization: `Basic ${Buffer.from(`${config.auth.username}:${config.auth.apiToken}`).toString('base64')}`
+      }
+    }
+
+    if(isUsingSlack) {
+      res.json({
+        fulfillment_response: {
+          messages: [
+            {
+              text: {
+                text: ["Análise iniciada, assim que terminamos enviaremos os resultados para o seu canal do slack."]
+              }
+            }
+          ],
+        }
+      })
+      await axios.post(slackURL, { text: `*------ 🚨 Iniciada a análise de riscos 🚨 ------*` })
+      const response = await riskAnalysisService(jenkinsURL, jobName, configJenkins,  sonarQubeURL, config.sonarAuth.token, sonarProjectName, isUsingSlack)
+      response.fulfillmentMessages.forEach(async (res) => {
+        const msg = res.text.text
+        await axios.post(slackURL, { text: `${msg}` })
+      })
+      await axios.post(slackURL, { text: `*------ 🚨 Plugins que precisam ser atualizados 🚨 ------*` })
+      response.pluginsToUpdate.forEach(async (plugin) => {
+        await axios.post(slackURL, { 
+          text: `----------------------------------------\n>*Nome*: ${plugin.pluginName}\n>*Versão Atual*: ${plugin.currentVersion}\n----------------------------------------`
+        })
+      })
+      await axios.post(slackURL, { text: `* 🚨 Aqui estão algumas informações importantes que recuperei do seu do jenkins*` })
+      response.jenkinsWarnings.forEach(async (warning) => {
+        await axios.post(slackURL, { text: `Warning sinalizado pelo jenkins -> >*${warning}*` })
+      })
+
+    } else {
+      const { fulfillmentMessages } = await riskAnalysisService(jenkinsURL, jobName, configJenkins)
+      res.json({
+        fulfillment_response: {
+          messages: fulfillmentMessages,
+
+        }
+      })
+    }
+  }
+
+  if(req.body.fulfillmentInfo?.tag === "buildPipeline") {
+
+    const configJenkins = {
+      headers: {
+        Authorization: `Basic ${Buffer.from(`${config.auth.username}:${config.auth.apiToken}`).toString('base64')}`
+      }
+    }
+
+    const crumbUrl = await axios.get(`${jenkinsURL}/crumbIssuer/api/json`, configJenkins)
+    const crumberHeader = crumbUrl.data.crumbRequestField
+
+    const headers = {
+      ...configJenkins.headers,
+      [crumberHeader]: crumbUrl.data.crumb,
+    }
+
+    if(isUsingSlack) {
+      await axios.post(slackURL, { text: `*------ ✅ Build da Pipeline ${jobName} iniciado ✅ ------*` })
+      await axios.post(`${jenkinsURL}/job/${jobName}/build`, null, { headers })
+      const response = await axios.get(`${jenkinsURL}/job/${jobName}/lastBuild/api/json`, configJenkins)
+      const slackMsg = {
+        text: `Resultados da build:
+                ID: ${response.data.id}
+                Duração: ${response.data.duration / 1000} Segundos,
+                Em progresso: ${response.data.inProgress === true ? "Sim" : "Não" },
+                Resultado: ${response.data.result}`,
+      }
+      await axios.post(slackURL, slackMsg)
+    } else {
+      await axios.post(`${jenkinsURL}/job/${jobName}/build`, null, {
+        headers
+      })
+      res.json({
+        fulfillment_response: {
+          messages: [
+            {
+              text: {
+                text: [
+                  `Build para o job ${jobName} Iniciada.
+                  Verifique seu jenkins!
+                `]
+              }
+            }
+          ]
+        }
+      })
+    }
+  }
+
+
+// intellibot
+// 11d6af1ee95e4ddadb8f1b2ab66c96134e
+// squ_088186eb9b7ac05dc37f9f20ccaebdce9cb35539
+//SE DER TEMPO IMPLEMENTAR UM SITE RAPIDO PARA HOSPEDAR O INTELLIBOT E SER CAPAZ DE GERAR GRAFICO PARA O CLIENTE. CARA ACHO QUE SÓ ISSO TA BOM
+
+
+
+// TIRAR UNS PRINTS, MOSTRANDO ONDE DEVE SER COLOCADA AS CONFIGS, O QUE PRECISA. 
+// ESCREVER QUE PODE USAR O AZURE PARA SALVAR ESSES SECRETS.
+// VOU "DETALHAR" COMO FAZER O SETUP DO PROJETO
+// E COMEÇAR A FALAR DAS LIMITAÇÕES E PROJETOS FUTUROS, INTEGRAAR COM MAIS AMBIENTES. FACILITAR A VIDA DO DEV.
+// INTEGRAR COM COMANDOS SLASH DO SLACK. VOU FAZER O SEGUINTE, COLOCAR UMA OPÇÃO PARA O DEV BAIXAR O REPO, E FAZER A CONFIG DO SLACK, PARA FICAR MONITORANDO A PIPE. <-- IMPORTANTE. DEVO COLOCAR ALGUNS COMANDOS SIM. 
+// CRIAR UM MONITORAMENTO ATIVO QUE FICA OBSERVANDO A PIPE. ASSIM QUE RODAR UM BUILD VERIFICAR MUDANÇAS NO QUALITYGATE SONARQUBE, INFORMAR QUE HOUVE DEGRADAÇÃO.
+// A LIB VAI FUNCIONAR APENAS PRO SLACK, POR ENQUANTO.
+// PRECISO AJUSTAR OS CONTROLLERS.
+// SETUP DO PROJETO
+
+
+
+      
 })
 
 app.listen(PORT ,() => {
   console.log(`Servidor rodando na porta ${PORT}`)
 })
 
-//VERIFICAR VERSÃO DO JENKINS, VERIFICAR MINHA V E VER SE EXISTE UMA MAIS ATUAL, POSSO FAZER UMA BUSCA NO OWASP PESQUISANDO POR VULNERABILIDADES DAQUELA VERSÂO.

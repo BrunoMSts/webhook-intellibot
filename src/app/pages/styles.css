@@ -1,0 +1,94 @@
+h1 {
+  color: red;
+}
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background-color: #f0f0f0;
+}
+
+.chat-container {
+  width: 80%;
+  max-width: 400px;
+  margin: 50px auto;
+  background-color: white;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.chat-header {
+  background-color: #4285f4;
+  color: white;
+  padding: 10px;
+  text-align: center;
+}
+
+.chat-content {
+  padding: 15px;
+  max-height: 300px;
+  overflow-y: scroll;
+}
+
+.chat-input {
+  display: flex;
+  padding: 10px;
+}
+
+.chat-input input {
+  flex: 1;
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+}
+
+.chat-input button {
+  background-color: #4285f4;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+.chat-input button:hover {
+  background-color: #357ae8;
+}
+
+#grafico {
+  display: none;
+  width: 80%;
+  max-width: 600px;
+  margin-top: 20px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+}
+
+#myChart {
+  width: 100%;
+  height: auto;
+}
+
+#expandirBotao {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+#expandirBotao:hover {
+  background-color: #0056b3;
+}
+
+h1 {
+  color: red;
+}

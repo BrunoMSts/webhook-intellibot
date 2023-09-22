@@ -31,22 +31,6 @@ pipeline {
       }
     }
   
-
-  //   stage('SonarQube Analysis') {
-  //     environment{
-  //       scannerHome = tool "sonarqube"
-  //     }
-  //     steps {
-  //       withSonarQubeEnv('sonarqube') {
-  //         sh '''${scannerHome}/bin/sonar-scanner
-  //         -Dsonar.projectKey=tcc-project \
-  //         -Dsonar.sources=./src \
-  //         -Dsonar.host.url=http://localhost:9000/ \
-  //         -Dsonar.login=squ_9a3231bfdffc431817f4b153be09e9d3bda36859"
-  //         '''
-  //     }
-  //   }
-  // }
     stage("Outlier Teste") {
       steps {
         echo "Iniciando tarefa longa"

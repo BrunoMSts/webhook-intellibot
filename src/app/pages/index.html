@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Seu Site</title>
+    <!-- Outros metadados, links para estilos, etc. -->
+    <style>
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background-color: #f0f0f0;
+      }
+
+      #container {
+        text-align: center;
+      }
+
+      #grafico {
+        display: none;
+        width: 100vh;
+        max-width: 600px;
+        margin-top: 20px;
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      #myChart {
+        width: 100%;
+        height: auto;
+      }
+
+      #expandirBotao {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+
+      #expandirBotao:hover {
+        background-color: #0056b3;
+      }
+
+      canvas {
+        margin-bottom: 10px;
+      }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+  <body>
+    <div id="container">
+      <button id="expandirBotao">Expandir Gráfico</button>
+      <div id="mensagem" style="display: none">
+        <p>Gráfico não disponível</p>
+      </div>
+      <div id="grafico">
+        <canvas id="myChart"></canvas>
+        <canvas id="outliersChart"></canvas>
+      </div>
+    </div>
+    <script>
+      const expandirBotao = document.getElementById("expandirBotao");
+      const graficoDiv = document.getElementById("grafico");
+
+      expandirBotao.addEventListener("click", async () => {
+        if (graficoDiv.style.display === "none") {
+          graficoDiv.style.display = "block";
+          await criarGrafico(
+            document.getElementById("myChart").getContext("2d")
+          );
+          await criarGraficoOutlier(
+            document.getElementById("outliersChart").getContext("2d")
+          );
+        } else {
+          graficoDiv.style.display = "none";
+        }
+      });
+      async function getDados() {
+        const response = await fetch("/graphs");
+        const dados = await response.json();
+
+        return dados;
+      }
+
+      async function criarGraficoOutlier(ctx) {
+
+        //NÃO DESENVOLVIDO
+
+        const dados = await getDados();
+        const mensagemDiv = document.getElementById("mensagem");
+        const graficoDiv = document.getElementById("grafico");
+        const mensagemP = mensagemDiv.querySelector("p");
+
+        if (dados?.msg) {
+          mensagemDiv.style.display = "block";
+          graficoDiv.style.display = "none";
+          mensagemP.textContent = dados.msg;
+          return; // Não cria o gráfico
+        }
+        mensagemDiv.style.display = "none";
+        graficoDiv.style.display = "block";
+        var outliersChart = new Chart(ctx, {
+          type: "scatter", // Usando um gráfico de dispersão para outliers
+          data: {
+            datasets: [
+              {
+                label: "Outliers",
+                data: [
+                  // 
+                  { x: 0, y: 8 },
+                  { x: 1, y: 5 },
+                  { x: 2, y: 10 },
+                ],
+                backgroundColor: "rgba(255, 0, 0, 1)", // Cor dos outliers
+                borderColor: "rgba(255, 0, 0, 1)",
+                borderWidth: 1,
+                pointRadius: 6,
+              },
+            ],
+          },
+          options: {
+            scales: {
+              x: {
+                type: 'linear',
+                position: 'bottom',
+                scaleLabel: {
+                  display: true,
+                  labelString: 'Build'
+                }
+              },
+              y: {
+                type: 'linear',
+                position: 'left',
+                scaleLabel: {
+                  display: true,
+                  labelString: 'Tempo'
+                }
+              },
+            }
+          },
+        });
+      }
+
+      async function criarGrafico(ctx) {
+        const dados = await getDados();
+        const mensagemDiv = document.getElementById("mensagem");
+        const graficoDiv = document.getElementById("grafico");
+        const mensagemP = mensagemDiv.querySelector("p");
+
+        if (dados?.msg) {
+          mensagemDiv.style.display = "block";
+          graficoDiv.style.display = "none";
+          mensagemP.textContent = dados.msg;
+          return; // Não cria o gráfico
+        }
+
+        var myChart = new Chart(ctx, {
+          type: "bar",
+          data: {
+            labels: ["BUG", "CODE_SMELLS", "VULNERABILITIES"],
+            datasets: [
+              {
+                label: "Quantidade",
+                data: [dados.BUG.length, dados.CODE_SMELL.length, dados.VULNERABILITY.length],
+                backgroundColor: [
+                  "rgba(255, 99, 132, 0.2)", // Cor da barra 1
+                  "rgba(54, 162, 235, 0.2)", // Cor da barra 2
+                  "rgba(75, 192, 192, 0.2)", // Cor da barra 3
+                ],
+                borderColor: [
+                  "rgba(255, 99, 132, 1)", // Cor da borda 1
+                  "rgba(54, 162, 235, 1)", // Cor da borda 2
+                  "rgba(75, 192, 192, 1)", // Cor da borda 3
+                ],
+                borderWidth: 1,
+              },
+            ],
+          },
+          options: {
+            // Opções de configuração do gráfico
+          },
+        });
+      }
+
+      criarGrafico(document.getElementById("myChart").getContext("2d"));
+      criarGraficoOutlier(document.getElementById("outliersChart").getContext("2d"));
+    </script>
+    <script src="https://www.gstatic.com/dialogflow-console/fast/df-messenger/prod/v1/df-messenger.js"></script> <!-- DIALOGFLOW MESSENGER, SCRIPT DISPONIBILIZADO PELO PRÓPRIO GOOGLE, AQUI VOCÊ PODE SUBSTITUIR PELO SEU PRÓPRIO AGENT DO DIALOGFLOW --> 
+    <df-messenger
+      location="us-central1"
+      agent-id="e3425735-1150-4ecb-aa42-d774bf9d4c9c"
+      language-code="pt-br">
+      <df-messenger-chat-bubble
+      chat-title="Intellibot"
+      bot-writing-text="..."
+      placeholder-text="Pergunte algo...">
+      </df-messenger-chat-bubble>
+    </df-messenger>
+    <style>
+      df-messenger {
+        z-index: 999;
+        position: fixed;
+        bottom: 16px;
+        right: 16px;
+      }
+    </style>
+  </body>
+</html>
