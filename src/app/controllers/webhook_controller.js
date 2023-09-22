@@ -1,5 +1,5 @@
 function webhookController() {
-  //LOGICA TE TODO O WEBHOOK?
+  //TODO
 }
 
 module.exports = {

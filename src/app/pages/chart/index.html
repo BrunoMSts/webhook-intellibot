@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gráfico</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <canvas id="myChart"></canvas>
+
+    <script>
+      async function getDados() {
+          const response = await fetch('/graphs');
+          const dados = await response.json();
+          return dados;
+      }
+  
+      async function criarGrafico() {
+          const dados = await getDados();
+
+          if(dados?.msg) {
+            const mensagem = document.createElement('p');
+            mensagem.textContent = dados.msg;
+            document.body.appendChild(mensagem);
+          } else {
+
+          var ctx = document.getElementById('myChart').getContext('2d');
+          var myChart = new Chart(ctx, {
+              type: 'bar',
+              data: {
+                  labels: ['BUG', 'CODE_SMELLS', 'VULNERABILITIES'],
+                  datasets: [{
+                      label: 'Quantidade',
+                      data: [dados.BUG,dados.CODE_SMELL,dados.VULNERABILITY],
+                      backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                      borderColor: 'rgba(75, 192, 192, 1)',
+                      borderWidth: 1
+                  }]
+              },
+              options: {
+                  // Opções de configuração do gráfico
+              }
+          });
+        }
+      }
+      criarGrafico();
+  </script>
+    <script src="https://www.gstatic.com/dialogflow-console/fast/messenger-cx/bootstrap.js?v=1"></script>
+    <df-messenger
+      df-cx="true"
+      location="us-central1"
+      chat-title="Intellibot"
+      agent-id="e3425735-1150-4ecb-aa42-d774bf9d4c9c"
+      language-code="pt-br"
+    ></df-messenger>
+  
+</body>
+</html>
