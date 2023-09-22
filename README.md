@@ -1,6 +1,8 @@
 # Projeto de Segurança em Pipelines de CI/CD - Desenvolvido como trabalho de conclusão de curso.
 
-# O PROJETO ENCONTRA SE EM ESTADO DE DESENVOLVIMENTO, MUITAS MELHORIAS PODEM E VÃO SER IMPLEMETADAS NO FUTURO DO PROJETO
+## O PROJETO ENCONTRA SE EM ESTADO DE DESENVOLVIMENTO, MUITAS MELHORIAS PODEM E VÃO SER IMPLEMETADAS NO FUTURO DO PROJETO
+
+## DOCUMENTAÇÂO DE COMO INSTANCIAR O PROJETO NA MÁQUINA LOCAL EM BREVE.
 
 Bem-vindo ao repositório do projeto de Segurança em Pipelines de CI/CD. Este projeto visa melhorar a segurança, a detecção de anomalias e a comunicação por meio de um chatbot inteligente em pipelines de CI/CD.
 
@@ -34,3 +36,6 @@ link do agent: EM BREVE.
 ## Contribuição
 
 Contribuições são bem-vindas! Sinta-se à vontade para abrir problemas (issues) e enviar pull requests com melhorias, correções de bugs ou novos recursos. Certifique-se de seguir as diretrizes de contribuição do projeto.
+
+## Mais informações de configuração podem ser encontradas no documento do TCC
+- link: EM BREVE
